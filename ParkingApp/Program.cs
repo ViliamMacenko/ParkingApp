@@ -47,7 +47,7 @@ namespace ParkingApp
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

@@ -20,14 +20,14 @@ namespace ParkingApp.Controllers
         }
 
         [Authorize(Roles = "admin")]
-        [HttpGet("")]
+        [HttpGet("getall")]
         public IActionResult GetAll()
         {
             List<ReservationDTO> reservationDTOs = _reservationService.GetAll().Result;
             return Ok(reservationDTOs);
         }
 
-        [HttpGet("")]
+        [HttpGet("get")]
         public IActionResult GetForUser()
         {
             int id = authService.CheckCookies(Request.Cookies);
@@ -42,7 +42,7 @@ namespace ParkingApp.Controllers
             }
         }
 
-        [HttpPost("")]
+        [HttpPost("add")]
         public IActionResult Add(ReservationDTO reservationDTO)
         {
             int id = authService.CheckCookies(Request.Cookies);
@@ -57,13 +57,13 @@ namespace ParkingApp.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int reservationId)
+        [HttpDelete("delete/{id}")]
+        public IActionResult Delete(int id)
         {
             int userId = authService.CheckCookies(Request.Cookies);
             if (userId > 0)
             {
-                _reservationService.RemoveReservation(reservationId, userId);
+                _reservationService.RemoveReservation(id, userId);
                 return Ok(null);
             }
             else

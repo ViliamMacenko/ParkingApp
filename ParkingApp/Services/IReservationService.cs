@@ -11,6 +11,9 @@ namespace ParkingApp.Services
         public Task<List<ReservationDTO>> GetForUser(int id);
 
         public bool ValidateSPZ(string sPZ);
-        public bool ValidateDate(DateOnly date);
+        public bool ValidateDate(DateTime date);
+        public Task<Reservation> GetReservation(int reservationId, int userId);
+        public Task<bool> UpdateDb();
+        public Task<User> GetUser(int id);
     }
 }

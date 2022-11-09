@@ -20,10 +20,77 @@ namespace ParkingApp.Services
             {
                 if (ValidateSPZ(reservationDTO.SPZ))
                 {
-                    User user = await _appContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+                    Task<User> task = GetUser(id);
+                    task.Wait();
+                    User user = task.Result;
                     Reservation reseravation = new Reservation(reservationDTO.SPZ, user.Name, reservationDTO.Date, user);
                     _appContext.Reservations.Add(reseravation);
-                    await _appContext.SaveChangesAsync();
+                    Task<bool> update = UpdateDb();
+                    update.Wait();
+                    bool succes = update.Result;
+                    if (succes)
+                    {
+                        return true;
+                    }
+                    else 
+                    {
+                    return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateDb()
+        {
+            await _appContext.SaveChangesAsync();
+            return true;
+        }
+        public async Task<User> GetUser(int id)
+        {
+            User user = await _appContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+            if (user is not null)
+            {
+                return user;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ReservationDTO>> GetAll()
+        {
+            List<Reservation> reservations = await _appContext.Reservations.ToListAsync();
+            return ReservationsToDTOs(reservations);
+        }
+
+        public async Task<List<ReservationDTO>> GetForUser(int id)
+        {
+            List<Reservation> reservations = await _appContext.Reservations.Include(r => r.User).Where(r => r.User.Id == id).ToListAsync();
+            return ReservationsToDTOs(reservations);
+        }
+
+        public async Task<bool> RemoveReservation(int reservationId, int userId)
+        {
+            Task<Reservation> task = GetReservation(reservationId, userId);
+            task.Wait();
+            Reservation reservation = task.Result;
+            if (reservation is not null)
+            {
+                _appContext.Reservations.Remove(reservation);
+                Task<bool> update = UpdateDb();
+                update.Wait();
+                bool succes = update.Result;
+                if (succes)
+                {
                     return true;
                 }
                 else
@@ -37,30 +104,16 @@ namespace ParkingApp.Services
             }
         }
 
-        public async Task<List<ReservationDTO>> GetAll()
+        public async Task<Reservation> GetReservation(int reservationId, int userId)
         {
-            List<Reservation> reservations = await _appContext.Reservations.ToListAsync();
-            return ReservationsToDTOs(reservations);
-        }
-
-        public async Task<List<ReservationDTO>> GetForUser(int id) 
-        {
-            List<Reservation> reservations = await _appContext.Reservations.Include(r=>r.User).Where(r=>r.User.Id==id).ToListAsync();
-            return ReservationsToDTOs(reservations);
-        }
-
-        public async Task<bool> RemoveReservation(int reservationId, int userId)
-        {
-            Reservation reservation = await _appContext.Reservations.Include(r=>r.User).Where(r => r.Id == reservationId).FirstOrDefaultAsync();
-            if (reservation is not null && reservation.User.Id==userId)
+            Reservation reservation = await _appContext.Reservations.Include(r => r.User).Where(r => r.Id == reservationId).FirstOrDefaultAsync();
+            if (reservation is not null && reservation.User.Id == userId)
             {
-                _appContext.Reservations.Remove(reservation);
-                await _appContext.SaveChangesAsync();
-                return true;
-            }            
-            else 
+                return reservation;
+            }
+            else
             {
-                return false;
+                return null;
             }
         }
 
@@ -69,12 +122,12 @@ namespace ParkingApp.Services
             return true;
         }
 
-        public bool ValidateDate(DateOnly date)
+        public bool ValidateDate(DateTime date)
         {
             return true;
         }
 
-        public List<ReservationDTO> ReservationsToDTOs(List<Reservation> reservations) 
+        public List<ReservationDTO> ReservationsToDTOs(List<Reservation> reservations)
         {
             if (reservations.Count > 0)
             {

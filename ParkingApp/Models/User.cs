@@ -7,17 +7,21 @@
         public string Password { get; set; } = null!;
         public string Salt { get; set; } = null!;
         public string Name { get; set; } = null!;
-        public string Role { get; }
+        public string Role { get; set; } = null!;
         public List<Reservation> Reservations { get; set; } = null!;
 
-        public User( string username, string password, string salt, string name)
+        public User(string username, string password, string salt, string name)
         {
             Username = username;
             Password = password;
             Salt = salt;
             Name = name;
             Reservations = new List<Reservation>();
-            Role = "User";
+            Role = "user";
+        }
+
+        public User() 
+        {
         }
     }
 }

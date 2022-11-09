@@ -15,7 +15,7 @@ namespace ParkingApp.Controllers
             this.userService = userService;
         }
 
-        [HttpPost("")]
+        [HttpPost("register")]
         public IActionResult Register(RegisterDTO registerDTO)
         {
             bool sucess=userService.Register(registerDTO).Result;
@@ -29,7 +29,7 @@ namespace ParkingApp.Controllers
             }
         }
 
-        [HttpPost("")]
+        [HttpPost("login")]
         public IActionResult Login(LoginDTO loginDTO)
         {
             string token=userService.Login(loginDTO).Result;
